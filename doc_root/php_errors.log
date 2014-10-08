@@ -1,0 +1,66 @@
+[14-Nov-2012 09:35:59 UTC] PHP Parse error:  syntax error, unexpected '/' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 270
+[14-Nov-2012 09:36:18 UTC] PHP Parse error:  syntax error, unexpected '/' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 270
+[14-Nov-2012 09:36:19 UTC] PHP Parse error:  syntax error, unexpected '/' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 270
+[14-Nov-2012 09:36:45 UTC] PHP Parse error:  syntax error, unexpected '/' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 270
+[14-Nov-2012 09:36:46 UTC] PHP Parse error:  syntax error, unexpected '/' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 270
+[14-Nov-2012 11:55:18 UTC] PHP Fatal error:  Only variables can be passed by reference in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/html.tpl.php on line 78
+[14-Nov-2012 11:55:30 UTC] PHP Fatal error:  Only variables can be passed by reference in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/html.tpl.php on line 78
+[14-Nov-2012 11:55:49 UTC] PHP Fatal error:  Only variables can be passed by reference in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/html.tpl.php on line 78
+[14-Nov-2012 11:55:59 UTC] PHP Fatal error:  Only variables can be passed by reference in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/html.tpl.php on line 78
+[14-Nov-2012 12:48:26 UTC] PHP Fatal error:  Call to undefined function drupal_set_html_head() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 5
+[14-Nov-2012 12:48:27 UTC] PHP Fatal error:  Call to undefined function drupal_set_html_head() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 5
+[14-Nov-2012 12:48:33 UTC] PHP Fatal error:  Call to undefined function drupal_set_html_head() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 5
+[14-Nov-2012 12:48:36 UTC] PHP Fatal error:  Call to undefined function drupal_set_html_head() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 5
+[14-Nov-2012 12:48:39 UTC] PHP Fatal error:  Call to undefined function drupal_set_html_head() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 5
+[14-Nov-2012 12:48:41 UTC] PHP Fatal error:  Call to undefined function drupal_set_html_head() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 5
+[14-Nov-2012 15:15:35 UTC] PHP Fatal error:  Cannot use object of type stdClass as array in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/node--noticias.tpl.php on line 7
+[14-Nov-2012 15:15:37 UTC] PHP Fatal error:  Cannot use object of type stdClass as array in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/node--noticias.tpl.php on line 7
+[14-Nov-2012 15:30:29 UTC] PHP Parse error:  syntax error, unexpected $end in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/page.tpl.php on line 195
+[14-Nov-2012 15:35:19 UTC] PHP Parse error:  syntax error, unexpected ')' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/node--noticias.tpl.php on line 11
+[14-Nov-2012 16:01:48 UTC] PHP Parse error:  syntax error, unexpected ';' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/page.tpl.php on line 172
+[15-Nov-2012 09:45:24 UTC] PHP Parse error:  syntax error, unexpected '}' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 63
+[15-Nov-2012 09:45:25 UTC] PHP Parse error:  syntax error, unexpected '}' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 63
+[15-Nov-2012 09:45:25 UTC] PHP Parse error:  syntax error, unexpected '}' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 63
+[15-Nov-2012 09:49:48 UTC] PHP Parse error:  syntax error, unexpected T_LNUMBER, expecting '&' or T_VARIABLE in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 71
+[15-Nov-2012 10:12:28 UTC] PHP Fatal error:  Call to a member function registerXPathNamespace() on a non-object in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 74
+[15-Nov-2012 10:16:03 UTC] PHP Fatal error:  Class 'simplexml_load_string' not found in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 74
+[15-Nov-2012 10:23:49 UTC] PHP Fatal error:  Call to a member function xpath() on a non-object in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 78
+[15-Nov-2012 13:14:59 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[15-Nov-2012 13:18:41 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[15-Nov-2012 13:19:09 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[15-Nov-2012 13:21:29 UTC] PHP Fatal error:  Cannot use object of type Entity as array in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 168
+[15-Nov-2012 13:22:18 UTC] PHP Fatal error:  Cannot use object of type Entity as array in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 168
+[15-Nov-2012 13:23:14 UTC] PHP Fatal error:  Cannot use object of type Entity as array in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 168
+[15-Nov-2012 13:23:39 UTC] PHP Fatal error:  Cannot use object of type Entity as array in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 170
+[15-Nov-2012 15:23:49 UTC] PHP Fatal error:  Cannot use object of type stdClass as array in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/node.tpl.php on line 5
+[15-Nov-2012 16:25:35 UTC] PHP Fatal error:  Function name must be a string in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 121
+[16-Nov-2012 09:08:31 UTC] PHP Parse error:  syntax error, unexpected $end in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/views-view--noticias--page.tpl.php on line 25
+[16-Nov-2012 11:53:20 UTC] PHP Parse error:  syntax error, unexpected '}' in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 195
+[20-Nov-2012 09:54:31 UTC] PHP Fatal error:  Call to a member function __toString() on a non-object in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 187
+[20-Nov-2012 09:55:48 UTC] PHP Fatal error:  Call to a member function __toString() on a non-object in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 191
+[20-Nov-2012 14:47:17 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[20-Nov-2012 14:47:18 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[20-Nov-2012 14:50:25 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[20-Nov-2012 14:50:31 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[20-Nov-2012 14:50:32 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[20-Nov-2012 14:53:13 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 71 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/errors.inc on line 281
+[20-Nov-2012 15:03:27 UTC] PHP Parse error:  syntax error, unexpected T_DOUBLE_ARROW in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 260
+[20-Nov-2012 15:03:27 UTC] PHP Parse error:  syntax error, unexpected T_DOUBLE_ARROW in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 260
+[20-Nov-2012 15:03:27 UTC] PHP Parse error:  syntax error, unexpected T_DOUBLE_ARROW in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 260
+[21-Nov-2012 11:43:59 UTC] PHP Fatal error:  Call to undefined function array_unshif() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/mapa.module on line 227
+[22-Nov-2012 15:20:47 UTC] PHP Fatal error:  Call to a member function addMetaData() on a non-object in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/views/plugins/views_plugin_query_default.inc on line 1428
+[22-Nov-2012 15:20:51 UTC] PHP Fatal error:  Call to a member function addMetaData() on a non-object in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/views/plugins/views_plugin_query_default.inc on line 1428
+[22-Nov-2012 15:26:07 UTC] PHP Parse error:  syntax error, unexpected $end in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/slx_custom/slx_custom.module on line 148
+[22-Nov-2012 15:26:09 UTC] PHP Parse error:  syntax error, unexpected $end in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/slx_custom/slx_custom.module on line 148
+[22-Nov-2012 15:55:31 UTC] PHP Fatal error:  Call to undefined method view::result() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/templates/views-view-list--noticias--page.tpl.php on line 8
+[23-Nov-2012 13:11:21 UTC] PHP Parse error:  syntax error, unexpected T_VARIABLE in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 43
+[23-Nov-2012 13:11:22 UTC] PHP Parse error:  syntax error, unexpected T_VARIABLE in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 43
+[23-Nov-2012 13:11:22 UTC] PHP Parse error:  syntax error, unexpected T_VARIABLE in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/themes/slxtheme/template.php on line 43
+[30-Nov-2012 13:52:27 UTC] PHP Parse error:  syntax error, unexpected T_ELSE in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/custom/mapa/templates/mapa.tpl.php on line 2
+[04-Dec-2012 08:11:06 UTC] PHP Fatal error:  Call to undefined function libraries_detect() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/mobile_switch/modules/mobile_detect_import/mobile_detect_import.install on line 49
+[04-Dec-2012 08:14:21 UTC] PHP Fatal error:  Call to undefined function libraries_detect() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/mobile_switch/modules/mobile_detect_import/mobile_detect_import.install on line 49
+[11-Dec-2012 14:57:40 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 523800 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/module.inc on line 2129
+[12-Dec-2012 14:06:21 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 523800 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/module.inc on line 2129
+[12-Dec-2012 14:08:21 UTC] PHP Fatal error:  Allowed memory size of 167772160 bytes exhausted (tried to allocate 523800 bytes) in /media/disco1/web/drupal/tanta-ciudadania_europea/includes/module.inc on line 2129
+[14-Dec-2012 08:28:10 UTC] PHP Fatal error:  Call to undefined function libraries_detect() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/mobile_switch/modules/mobile_detect_import/mobile_detect_import.install on line 49
+[14-Dec-2012 08:28:11 UTC] PHP Fatal error:  Call to undefined function libraries_detect() in /media/disco1/web/drupal/tanta-ciudadania_europea/sites/all/modules/mobile_switch/modules/mobile_detect_import/mobile_detect_import.install on line 49

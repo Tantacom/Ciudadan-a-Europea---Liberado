@@ -1,0 +1,17 @@
+.ui-btn-inner{
+border:none;
+}
+
+.filter span, .filter label, legend{
+padding-bottom:0.25em;
+}
+
+
+.all span.btn, .all #edit-submit{
+    float: none;
+    margin-top: 0;
+}
+
+.all label, .all fieldset, .all .form-item{
+float:none;
+}

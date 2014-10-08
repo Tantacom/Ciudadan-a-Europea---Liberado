@@ -1,0 +1,335 @@
+<?php
+function embajadas_menu(){
+  $items['admin/config/system/embajadas'] = array(
+    'title' => 'Puntos de contacto',
+    'description' => 'Listado de puntos de contacto',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array( 'embajadas_list_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array( 'administer site configuration' )
+  );
+  $items['admin/config/system/embajadas/add'] = array(
+    'title' => 'Añadir punto de contacto',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array( 'embajada_form'),
+    'access callback' => 'user_access',
+    'access arguments' => array( 'administer site configuration' ),
+    'type' => MENU_LOCAL_ACTION
+  );
+  
+  $items['admin/config/system/embajadas/%/edit'] = array(
+    'title' => 'Editar punto de contacto',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array( 'embajada_form', 4 ),
+    'access callback' => 'user_access',
+    'access arguments' => array( 'administer site configuration' ),
+    'type' => MENU_CALLBACK
+  );
+  $items['admin/config/system/embajadas/%/delete'] = array(
+    'title' => 'Eliminar punto de contacto',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array( 'embajada_delete_form', 4 ),
+    'access callback' => 'user_access',
+    'access arguments' => array( 'administer site configuration' ),
+    'type' => MENU_CALLBACK
+  );
+  return $items;
+}
+
+function embajadas_theme($existing, $type, $theme, $path) {
+  return array(
+    'embajadas_list_table' => array(
+      'render element' => 'element'
+    ),
+  );
+}
+
+function embajadas_list_form( $form, &$form_state){
+  static $pager_element = 0;
+  $fields = array();
+$table = 'embajadas';
+  $fields = array(
+    'eid','target_country', 'address', 'address_google', 
+    'type', 'origin_country', 'phone', 'fax', 'email', 'lat', 'lng'
+  );
+  //$fields = dba_get_fields('embajadas');
+
+  $header = array();
+  $options = array();
+  if (count($fields)) {
+    $count = 0;
+    foreach ($fields as $field) {
+      $header[$field] = array('data' => "$field", 'field' => "$field");
+      if (!$count++) {
+        // set default sort column as first field
+        $header[$field]['sort'] = 'desc';
+      }
+    }
+
+    $header['options'] = array();
+
+    // SELECT * FROM $table with pager and tablesort
+    $conn = db_set_active(variable_get('dba_active_database', 'default'));
+db_set_active($conn);
+ini_set( 'display_errors', 1 );
+    $query = db_select($table)->fields($table);
+    if( isset( $_GET['order'] ) )
+        $query->orderBy($_GET['order'], $_GET['sort']);
+    $query = $query->extend('TableSort')->extend('PagerDefault')->limit(50);
+    $rows = $query->execute();
+    
+    $count = 0;
+    while ($row = $rows->fetchAssoc()) {
+      foreach ($fields as $field) {
+        $options[$count][$field] = check_plain($row[$field]);
+      }
+      $operations = array();
+      $operations['edit'] = array(
+        'title' => t('edit'),
+        'href' => 'admin/config/system/embajadas/' . $row['eid'] . '/edit',
+     );
+    $operations['delete'] = array(
+        'title' => t('delete'),
+        'href' => 'admin/config/system/embajadas/' . $row['eid'] . '/delete',
+     );
+      $options[$count]['options'] = array(
+        'data' => array(
+          '#theme' => 'links__node_operations',
+          '#links' => $operations,
+          '#attributes' => array('class' => array('links', 'inline')),
+        ),
+        );
+      
+      $count++;
+    }
+  }
+  $form['table'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#empty' => t('The !table table is empty.', array('!table' => $table)),
+  );
+  $form['pager'] = array('#markup' => theme('pager', array('tags' => array(), 'element' => $pager_element, 
+ 'quantity' => 50 )));
+  $pager_element++;
+  return $form;
+}
+
+function embajada_form( $form, &$form_state, $eid = null ){
+  $form = array();
+  if( $eid != null ){
+    $result = db_query("SELECT eid,target_country, address, address_google, type, origin_country,
+phone, fax, email, lat, lng 
+                        FROM {embajadas} 
+                        WHERE eid=:eid", array( 'eid' => $eid ))->fetchAssoc();
+   $form['eid'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $eid
+    );
+  }
+
+    $todos_paises = countries_get_countries('all');
+    foreach ($todos_paises as $pais) {
+        $clave_pais = $pais->iso2;
+        $valores[$clave_pais] = country_property($pais, 'name', NULL, TRUE);
+    }
+
+  $form['tc'] = array(
+    '#type' => 'select',
+    '#title' => 'Target Country',
+    '#required' => TRUE,
+    '#options' => $valores,
+    '#default_value' => isset( $result['target_country']) ? array( $result['target_country'] ) : array()
+  );
+  
+  $form['address'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Address',
+    '#default_value' => isset( $result['address']) ? $result['address'] : ''
+  );
+  
+   $form['address_google'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Address Google',
+    '#description' => 'No necesario rellenar',
+    '#default_value' =>  isset( $result['address_google']) ? $result['address_google'] : ''
+  );
+
+  $form['type'] = array(
+    '#type' => 'select',
+    '#title' => 'Type',
+    '#options' => array(
+        '0' => '--',
+        '1' => 'Embajada',
+        '2' => 'Consulado',
+        '3' => 'Representación de país UE',
+        '4' => 'Representación recomendada MAEC'
+    ),
+
+    '#default_value' => isset( $result['type']) ? array( $result['type'] ) : array()
+  );
+
+  $form['oc'] = array(
+    '#type' => 'select',
+    '#title' => 'Origin Country',
+    '#required' => TRUE,
+    '#options' => $valores,
+    '#default_value' => isset( $result['origin_country']) ? array( $result['origin_country'] ) : array( 'ES' )
+
+  );
+
+ $form['phone'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Phone',
+    '#default_value' => isset( $result['phone']) ? $result['phone'] : ''
+  );
+
+ $form['fax'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Fax',
+    '#default_value' => isset( $result['fax']) ? $result['fax'] : ''
+  );
+
+$form['email'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Email',
+
+    '#default_value' => isset( $result['email']) ? $result['email'] : ''
+  );
+
+$form['lat'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Latitude',
+    '#required' => TRUE,
+    '#default_value' => isset( $result['lat']) ? $result['lat'] : ''
+  );
+
+$form['lng'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Longitude',
+    '#required' => TRUE,
+    '#default_value' => isset( $result['lng']) ? $result['lng'] : ''
+  );
+  $form['boton2'] = array(
+    '#type' => 'submit',
+    '#value' => $sid !== null ? 'Guardar' : 'Guardar y añadir otro'
+  );
+  
+  $form['boton'] = array(
+    '#type' => 'submit',
+    '#value' => 'Guardar y volver al listado'
+  );
+  
+   $form['boton3'] = array(
+    '#type' => 'submit',
+    '#value' => 'Cancelar y volver al listado',
+    '#limit_validation_errors' => array(),
+    '#submit' => array('embajada_form_submit')
+  );
+
+  return $form;
+}
+
+function embajada_delete_form( $form, &$form_state, $eid = null ){
+  $form = array();
+  $form['eid'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $eid
+  );
+  $form['msg'] = array(
+    '#markup' => '¿Está Vd. seguro?',
+    '#type' => 'item'
+  );
+  
+  $form['boton2'] = array(
+    '#type' => 'submit',
+    '#value' => 'Sí'
+  );
+  
+  $form['boton'] = array(
+    '#type' => 'submit',
+    '#value' => 'No'
+  );
+  
+  return $form;
+}
+
+function embajada_delete_form_submit( $form, &$form_state ){
+  $edit = $form_state['values'];
+  if($form_state['clicked_button']['#value'] === $form_state['values']['boton2']){
+    if( isset( $edit['eid'] )){
+
+
+      db_query( "DELETE FROM {embajadas} WHERE eid=:eid", array( 'eid' => $edit['eid']));
+    }
+  }
+  $form_state['redirect'] = 'admin/config/system/embajadas';
+}
+
+function embajada_form_submit( $form, &$form_state ){
+  $edit = $form_state['values'];
+  if($form_state['clicked_button']['#value'] != $form_state['values']['boton3']){
+    
+      
+    if ( !isset( $edit['eid'])){
+    db_query( "INSERT INTO {embajadas} (target_country,address,address_google,type,origin_country, phone, fax, email, lat, lng) VALUES (:target_country,:address,:address_google,:type,:origin_country, :phone, :fax, :email, :lat, :lng)",
+            array( 
+              'target_country' => $edit['tc'],
+              'address' => $edit['address'],
+              'address_google' => $edit['address_google'],
+              'type' => $edit['type'],
+              'origin_country' => $edit['oc'],
+              'phone' => $edit['phone'],
+              'fax' => $edit['fax'],
+              'email' => $edit['email'],
+              'lat' => (float)$edit['lat'],
+              'lng' => (float)$edit['lng']
+              )
+        );
+    }
+    else{
+      // update 
+       db_query( "UPDATE {embajadas} set 
+                            target_country=:target_country, 
+                            address=:address,
+                            address_google=:address_google,
+                            type=:type,
+                            origin_country = :origin_country,
+                            phone =:phone,
+                            fax =:fax,
+                            email =:email,
+                            lat =:lat,
+                            lng =:lng
+                            WHERE eid=:eid",
+            array( 
+              'target_country' => $edit['tc'],
+              'address' => $edit['address'],
+              'address_google' => $edit['address_google'],
+              'type' => $edit['type'],
+              'origin_country' => $edit['oc'],
+              'phone' => $edit['phone'],
+              'fax' => $edit['fax'],
+              'email' => $edit['email'],
+              'lat' => $edit['lat'],
+              'lng' => $edit['lng'],
+              'eid' => $edit['eid']
+              ));
+      
+    }
+    if($form_state['clicked_button']['#value'] == $form_state['values']['boton']){
+      $form_state['redirect'] = 'admin/config/system/embajadas';
+    }
+    if ( !isset( $edit['eid'])){
+      drupal_set_message( t( 'Creado el punto de contacto' ));
+    }
+    else{
+      drupal_set_message( t( 'Actualizado el punto de contacto' ));
+    }
+  }
+  else{
+    $form_state['redirect'] = 'admin/config/system/embajadas';
+  }
+}
+
+
+

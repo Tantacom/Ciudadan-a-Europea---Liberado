@@ -1,0 +1,12 @@
+PDOException: SQLSTATE[23000]: Integrity constraint violation: 1048 Column &#039;lat&#039; cannot be null: INSERT INTO {embajadas} (address, target_country, origin_country, phone, fax, city, lat, lng) VALUES (:db_insert_placeholder_0, :db_insert_placeholder_1, :db_insert_placeholder_2, :db_insert_placeholder_3, :db_insert_placeholder_4, :db_insert_placeholder_5, :db_insert_placeholder_6, :db_insert_placeholder_7); Array
+(
+    [:db_insert_placeholder_0] => Al Masaood Tower (6th floor) Hamdan Street; Abu Dhabi; United Arab Emirates P.O. Box 3686
+    [:db_insert_placeholder_1] => AE
+    [:db_insert_placeholder_2] => BE
+    [:db_insert_placeholder_3] => 00 971 2 6319449 
+    [:db_insert_placeholder_4] => 00 971 2 6319353
+    [:db_insert_placeholder_5] => capital
+    [:db_insert_placeholder_6] => 
+    [:db_insert_placeholder_7] => 
+)
+ en mapa_load_data_from_xml() (línea 340 de /home/carlos/workspace/ceuropea/sites/all/modules/custom/mapa/mapa.module).

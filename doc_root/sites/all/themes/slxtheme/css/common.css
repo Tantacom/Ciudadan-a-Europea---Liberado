@@ -1,0 +1,67 @@
+/* http://meyerweb.com/eric/tools/css/reset/ v2.0 */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline}
+body{line-height:1}
+ol, ul{list-style:none}
+blockquote, q{quotes:none}
+blockquote:before, blockquote:after, q:before, q:after{content:'';content:none}
+table{border-collapse:collapse;border-spacing:0}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section{display:block}
+/* Added by Tanta from https://github.com/murtaugh/HTML5-Reset/blob/master/_/css/style.css */
+html{overflow-y:scroll} /* force a vertical scrollbar to prevent a jumpy page */
+button{width:auto;overflow:visible} /* make buttons play nice in IE */
+del{text-decoration:line-through}
+abbr[title], dfn[title]{border-bottom:1px dotted #000;cursor:help}
+.clickable, label, input[type=button], input[type=submit], input[type=reset], button{cursor:pointer} /* hand cursor on clickable elements */
+pre, code, kbd, samp{font-family:monospace, sans-serif} /* standardize any monospaced elements */
+/* Added by Tanta to reset form elements */
+input, textarea, select, option{margin:0;padding:0;border:1px solid #000;background:none;font:100%/100% Arial, Helvetica, san-serif}
+/* Added by Tanta to reset strong, em*/
+strong, b {font-weight:bold}
+em, i {font-style:italic}
+/*img {max-width:100%; /*Prevent stretching of full-size and large-size images with height and width attributes in IE8 width: auto; height:auto;}*/
+
+.clr {clear:both}
+.flt {float:left}
+.frt {float:right}
+.offscreen {position:absolute;top:-1500em;left:0;width:1px;height:1px;overflow:hidden}
+
+@font-face {
+	font-family: 'HelveticaLTStdCondBold';
+	src: url('font/helveticaltstd-boldcond-webfont.eot');
+	src: url('font/helveticaltstd-boldcond-webfont.eot?#iefix') format('embedded-opentype'),
+	     url('font/helveticaltstd-boldcond-webfont.woff') format('woff'),
+	     url('font/helveticaltstd-boldcond-webfont.ttf') format('truetype'),
+	     url('font/helveticaltstd-boldcond-webfont.svg#HelveticaLTStdCondBold') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+@font-face {
+	font-family: 'HelveticaLTStdCondLightRg';
+	src: url('font/helveticaltstd-lightcond-webfont.eot');
+	src: url('font/helveticaltstd-lightcond-webfont.eot?#iefix') format('embedded-opentype'),
+	     url('font/helveticaltstd-lightcond-webfont.woff') format('woff'),
+	     url('font/helveticaltstd-lightcond-webfont.ttf') format('truetype'),
+	     url('font/helveticaltstd-lightcond-webfont.svg#HelveticaLTStdCondLightRg') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.page-puntos-de-contacto .results {display: none;}
+.wysiwyg p, .wysiwyg strong.tit { display:block; margin-bottom:1.5em; }
+.wysiwyg a,
+.field-name-field-pagbasica-texto a,
+.views-field-field-noticias-texto a,
+.field-name-field-pagbasica-enlaces a,
+.field-name-field-pagbasica-descargas a{ color:#d94d4d; }
+	.wysiwyg a:hover { text-decoration:none; }
+.wysiwyg dl { margin-bottom:1em; }
+	.wysiwyg dt { font-weight:bold; }
+		.contact .wysiwyg dt, dt.titulo { color:#4bb3d2; }
+		.wysiwyg .detail dt, .wysiwyg .detail dd  { float:left; }
+		.wysiwyg .detail dt { clear:both; margin-right:.5em; color:#373737; }
+		.wysiwyg .detail dd {margin-bottom:0;}
+
+.wysiwyg .como-llegar { position:relative; margin:0 0 1em 0; padding:0; }
+	.como-llegar img { margin-right:.5em; }
+	.como-llegar a { position:absolute; top:2px; }

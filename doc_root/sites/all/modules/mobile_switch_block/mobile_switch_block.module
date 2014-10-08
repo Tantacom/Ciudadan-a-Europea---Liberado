@@ -1,0 +1,376 @@
+<?php
+/**
+ * @file
+ * Extends the Mobile Switch module with an theme switch block.
+ *
+ * The block content provides a link to manually switch the current theme to
+ * the mobile or desktop theme.
+ */
+
+/**
+ * Implements hook_boot().
+ */
+function mobile_switch_block_boot() {
+  // No functionalities here.
+  // We use this hook to set autmatically the system table bootstrap value
+  // for this module to 1.
+}
+
+/**
+ * Implements hook_mobile_switch_mobile_boot_alter().
+ *
+ * @param $conf
+ *   The associative array contains values to alter.
+ * @param $get
+ *   The associative array contains various parameters to help to alter.
+ *
+ * Insert new entries in the 'variable' table:
+ *   - theme_cookie: The default value is FALSE. If the theme switch cookie
+ *                   exists the value can be 'standard' or 'mobile'.
+ */
+function mobile_switch_block_mobile_switch_boot_alter(&$conf, $get) {
+  $conf['theme_cookie'] = FALSE;
+  $get['theme_cookie'] = FALSE;
+
+  // Use variable_get() works not proper here.
+  // We use the presaved variables:
+  // - $conf['mobile_switch_theme_default']
+  // - $conf['mobile_switch_theme_mobile']
+
+  // Theme switch from URL.
+  // Set users cookie.
+  if (isset($_GET['mobile_switch'])) {
+    _mobile_switch_block_set_cookie($_GET['mobile_switch']);
+    $get['theme_cookie'] = $_GET['mobile_switch'];
+  }
+  // Provide cookie value.
+  $conf['theme_cookie'] = $get['theme_cookie'] = _mobile_switch_block_get_cookie();
+
+  // No theme cookie exist.
+  if ((bool) $get['theme_cookie'] === FALSE && (bool) $get['browser']['ismobiledevice'] == TRUE) {
+    $conf['theme_default'] = $conf['mobile_switch_theme_mobile'];
+    $conf['mobile_switch_ismobiledevice'] = TRUE;
+    $conf['mobile_switch_ismobiletheme'] = TRUE;
+  }
+
+  // Theme switch from URL as user action.
+  if (isset($_GET['mobile_switch'])) {
+    switch ($_GET['mobile_switch']) {
+      case 'standard':
+        $conf['theme_default'] = $conf['mobile_switch_theme_default'];
+        $conf['theme_mobile'] = $conf['mobile_switch_theme_default'];
+        $conf['mobile_switch_ismobiledevice'] = FALSE;
+        $conf['mobile_switch_ismobiletheme'] = FALSE;
+        break;
+      case 'mobile':
+        $conf['theme_default'] = $conf['mobile_switch_theme_mobile'];
+        $conf['mobile_switch_ismobiledevice'] = TRUE;
+        $conf['mobile_switch_ismobiletheme'] = TRUE;
+        break;
+    }
+  }
+  // Theme cookie exist.
+  elseif ($get['theme_cookie']) {
+    switch ($get['theme_cookie']) {
+      case 'standard':
+        $conf['theme_default'] = $conf['mobile_switch_theme_default'];
+        $conf['theme_mobile'] = $conf['mobile_switch_theme_default'];
+        $conf['mobile_switch_ismobiledevice'] = FALSE;
+        $conf['mobile_switch_ismobiletheme'] = FALSE;
+        break;
+      case 'mobile':
+        $conf['theme_default'] = $conf['mobile_switch_theme_mobile'];
+        $conf['mobile_switch_ismobiledevice'] = TRUE;
+        $conf['mobile_switch_ismobiletheme'] = TRUE;
+        break;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mobile_switch_block_form_mobile_switch_advanced_settings_form_alter(&$form, &$form_state, $form_id) {
+  global $conf;
+
+  if ($conf['mobile_switch_theme_mobile'] !== 'none') {
+    $form['switch_block'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Switch block'),
+      '#description' => t('Take a look at the !readme.', array('!readme' => l('README.txt', 'http://drupalcode.org/project/mobile_switch_block.git/blob_plain/refs/heads/master:/README.txt'))),
+      '#collapsible' => TRUE,
+      '#collapsed' => FALSE
+    );
+    $form['switch_block']['mobile_switch_block_content'] = array(
+      '#type' => 'select',
+      '#title' => t('Block content'),
+      '#default_value' => variable_get('mobile_switch_block_content', 'link'),
+      '#options' => _mobile_switch_block_content_options()
+    );
+
+    $form['switch_block']['mobile_switch_block_desktop_device_name'] = array(
+      '#type' => 'select',
+      '#title' => t('Desktop device designation'),
+      '#description' => t('Select the designation for the desktop device. Example output: Standard view, Default view, Desktop view'),
+      '#default_value' => variable_get('mobile_switch_block_desktop_device_name', 'standard'),
+      '#options' => array(
+        'standard' => t('standard'),
+        'default' => t('default'),
+        'desktop' => t('desktop')
+      )
+    );
+    $form['switch_block']['mobile_switch_block_switch_link_text'] = array(
+      '#type' => 'select',
+      '#title' => t('Switch link text'),
+      '#description' => t('Select the second part of the switch link text. Example output: Mobile view, Mobile site, Mobile variant, Mobile version'),
+      '#default_value' => variable_get('mobile_switch_block_switch_link_text', 'view'),
+      '#options' => array(
+        'view' => t('view'),
+        'site' => t('site'),
+        'variant' => t('variant'),
+        'version' => t('version')
+      )
+    );
+
+    $form['switch_block']['mobile_switch_block_cookie_expire'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Cookie lifetime'),
+      '#description' => t('The time after the <em>Mobile Switch</em> theme cookie expires, in seconds.'),
+      '#default_value' => variable_get('mobile_switch_block_cookie_expire', 31536000),
+      '#size' => 20,
+      '#maxlength' => 12,
+      '#required' => TRUE,
+      '#element_validate' => array('_mobile_switch_block_cookie_expire_validate')
+    );
+  }
+}
+
+/**
+ * Render API callback: Validates the cookie expire value.
+ *
+ * Ensures that only numbers and no white spaces has been entered.
+ *
+ * This function is assigned as an #element_validate callback in
+ * mobile_switch_block_form_mobile_switch_advanced_settings_form_alter().
+ */
+function _mobile_switch_block_cookie_expire_validate($element, &$form_state) {
+  if (preg_match("/[^0-9]/", $element['#value'])) {
+    form_error($element, t('%title: Only numbers and no white spaces are possible.', array('%title' => t($element['#title']))));
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function mobile_switch_block_theme() {
+  return array(
+    'mobile_switch_block_switch_content' => array(
+      'template' => 'mobile-switch-block-switch-content',
+      'render element' => 'content'
+    )
+  );
+}
+
+/**
+ * Processes variables for mobile-switch-block-switch-content.tpl.php.
+ *
+ * Returns HTML content for the Mobile switch block.
+ *
+ * @see mobile_switch_block_view()
+ * @see mobile_switch_block_get_block_content()
+ *
+ * @ingroup themeable
+ */
+function template_preprocess_mobile_switch_block_switch_content(&$variables) {
+  global $conf;
+
+  $variables['mobile_switch_ismobiledevice'] = (bool) variable_get('mobile_switch_ismobiledevice', FALSE);
+  $variables['mobile_switch_block_content'] = variable_get('mobile_switch_block_content', 'link');
+
+  $variables['query_value'] = '';
+  $variables['version'] = '';
+  $variables['version_text'] = '';
+  $variables['class'] = '';
+
+  $variables['switch_link'] = '';
+  $variables['switch_message'] = '';
+
+  $items = array();
+
+  if ($variables['mobile_switch_ismobiledevice']) {
+    $variables['query_value'] = 'standard';
+    $variables['version'] = 'mobile';
+    $variables['version_text'] = variable_get('mobile_switch_block_desktop_device_name', 'standard');
+    $variables['class'] = 'mobile-switch-to-standard';
+  }
+  else {
+    $variables['query_value'] = 'mobile';
+    $variables['version'] = variable_get('mobile_switch_block_desktop_device_name', 'standard');
+    $variables['version_text'] = 'mobile';
+    $variables['class'] = 'mobile-switch-to-mobile';
+  }
+
+  // Prepare the switch content.
+  switch ($variables['mobile_switch_block_content']) {
+    case 'link':
+      $variables['switch_link'] = t('<a href="!switch-url">!version !view</a>', array(
+                                     '!view' => variable_get('mobile_switch_block_switch_link_text', 'view'),
+                                     '!switch-url' => _mobile_switch_block_url($variables['query_value'], TRUE),
+                                     '!version' => ucfirst($variables['version_text']))
+                                   );
+      $items[] = array(
+        'class' => array('leaf'),
+        'data' => $variables['switch_link']
+      );
+      break;
+    case 'message_link':
+      $switch_message =
+      $variables['switch_message'] = '<span class="mobile-switch-inform">' . t('This is the !version-text !version of the site.', array('!version-text' => $variables['version'], '!version' => variable_get('mobile_switch_block_switch_link_text', 'view'))) . '</span>' . "\n";
+      $variables['switch_link'] = t('<a href="!switch-url">!version !view</a>', array(
+                                     '!view' => variable_get('mobile_switch_block_switch_link_text', 'view'),
+                                     '!switch-url' => _mobile_switch_block_url($variables['query_value'], TRUE),
+                                     '!version' => ucfirst($variables['version_text']))
+                                   );
+      $items[] = array(
+        'class' => array('leaf'),
+        'data' => $variables['switch_link']
+      );
+      break;
+  }
+
+  // Usage of theme_item_list() needed for the use with a Mobile jQuery sub-theme.
+  // This ensures the Mobile jQuery like display of the switch content.
+  $variables['content'] = $variables['switch_message'] . theme('item_list', array('attributes' => array('class' => array('menu clearfix')) , 'items' => $items));
+}
+
+
+/**
+ * Implements hook_block_info().
+ */
+function mobile_switch_block_block_info() {
+  $blocks['switch']['info'] = t('Mobile switch');
+  $blocks['switch']['properties']['administrative'] = TRUE;
+  // Necessary for the correct functioning of the switch function for
+  // anonymous users if enabled block caching in the performance settings.
+  $blocks['switch']['cache'] = DRUPAL_NO_CACHE;
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function mobile_switch_block_block_configure($delta = '') {
+  $form['mobile_switch_block_content'] = array(
+    '#type' => 'select',
+    '#title' => t('Block content'),
+    '#default_value' => variable_get('mobile_switch_block_content', 'link'),
+    '#options' => _mobile_switch_block_content_options()
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function mobile_switch_block_block_save($delta = '', $edit = array()) {
+  variable_set('mobile_switch_block_content', $edit['mobile_switch_block_content']);
+}
+
+/**
+ * Implements hook_block_view()
+ */
+function mobile_switch_block_block_view($delta) {
+
+  if ($conf['mobile_switch_theme_mobile'] === 'none') {
+    return;
+  }
+
+  $get['deskbrowser'] = (bool) variable_get('mobile_switch_deskbrowser', FALSE);
+  $get['developer'] = (bool) variable_get('mobile_switch_developer', FALSE);
+  $get['browser'] = mobile_switch_mobile_detect($get['developer']);
+
+  $block = array();
+
+  switch ($delta) {
+    case 'switch':
+      if (((bool) $get['browser']['ismobiledevice'] === TRUE && (bool) $get['browser']['prevent_device'] === FALSE) || ($get['deskbrowser'] === TRUE && (bool) $get['browser']['ismobiledevice'] === FALSE)) {
+        $block['subject'] = t('Theme switch');
+        $block['content'] = theme('mobile_switch_block_switch_content');
+      }
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Wrapper function to get the switch block content.
+ *
+ * @return string
+ *   HTML switch block content.
+ */
+function mobile_switch_block_get_block_content() {
+  return theme('mobile_switch_block_switch_content');
+}
+
+/**
+ * Get the cookie value.
+ *
+ * @return boolean|string
+ *   FALSE if not set or one of the two values standard/mobile.
+ *
+ * @see mobile_switch_block_mobile_switch_boot_alter()
+ */
+function _mobile_switch_block_get_cookie() {
+  $name = 'mobile_switch_mode';
+
+  return isset($_COOKIE[$name]) ? $_COOKIE[$name] : FALSE;
+}
+
+/**
+ * Set the cookie value.
+ *
+ * @param $value
+ *   The string contains one of the possible values:
+ *   - standard
+ *   - mobile
+ *
+ * @see mobile_switch_block_mobile_switch_boot_alter()
+ */
+function _mobile_switch_block_set_cookie($value) {
+  setrawcookie('mobile_switch_mode', $value, REQUEST_TIME + variable_get('mobile_switch_block_cookie_expire', 31536000), '/');
+}
+
+/**
+ * Get the mobile switch URL.
+ *
+ * @param $mode
+ *   A string with the possible values:
+ *   - standard
+ *   - mobile
+ * @param $manual
+ *   A boolean value.
+ *
+ * @see theme_mobile_switch_block()
+ */
+function _mobile_switch_block_url($mode, $manual = FALSE) {
+  $options['query']['mobile_switch'] = $manual ? $mode : 0;
+  $options['absolute'] = TRUE;
+
+  return url(current_path(), $options);
+}
+
+/**
+ * Helper function to get block content options.
+ *
+ * @see mobile_switch_block_form_mobile_switch_advanced_settings_form_alter()
+ * @see mobile_switch_block_block_configure()
+ */
+function _mobile_switch_block_content_options() {
+  return array(
+    'link' => t('Only the switch link'),
+    'message_link' => t('Message and switch link')
+  );
+}

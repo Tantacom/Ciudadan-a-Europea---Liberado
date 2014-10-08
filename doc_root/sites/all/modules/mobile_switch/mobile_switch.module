@@ -1,0 +1,371 @@
+<?php
+/**
+ * @file
+ * Simple theme switch for mobile devices, detected by browscap.
+ */
+
+/**
+ * Implements hook_boot().
+ *
+ * Alter specific entries in the 'variable' table:
+ *   - theme_default: If mobile mobile device the value are changed
+ *                    to the configured mobile theme.
+ * Insert new entries in the 'variable' table:
+ *   - mobile_switch_ismobiledevice: The default value is FALSE. If the
+ *                                   browscap value 'ismobiledevice' are 1
+ *                                   the value is TRUE.
+ *   - mobile_switch_ismobiletheme: The default value is FALSE. If used mobile
+ *                                  theme the value is TRUE.
+ *   - theme_mobile: The default value is FALSE. If used mobile theme the value
+ *                   is the machine name of the used theme.
+ */
+function mobile_switch_boot() {
+  global $conf;
+
+  // Initialize the new variables here (as fallback) if configured the
+  // 'Mobile theme' setting  with the option 'Do not use'.
+  $conf['mobile_switch_ismobiledevice'] = FALSE;
+  $conf['mobile_switch_istablet'] = FALSE;
+  $conf['mobile_switch_ismobiletheme'] = FALSE;
+  $conf['theme_mobile'] = FALSE;
+  // Preserve the theme configuration variables.
+  $conf['mobile_switch_theme_default'] = variable_get('theme_default', 'bartik');
+  $conf['mobile_switch_theme_mobile'] = variable_get('mobile_switch_mobile_theme', 'none');
+
+  // Use the mobile theme on tablet devices.
+  $get['tablet_usage'] = (bool) variable_get('mobile_switch_tablet_usage', TRUE);
+  // Use the mobile theme on admin pages.
+  $get['admin_usage'] = (bool) variable_get('mobile_switch_admin_usage', FALSE);
+
+  if (defined('MAINTENANCE_MODE')
+    || (stristr($_GET['q'], 'admin') && $get['admin_usage'] === FALSE)
+    || $conf['mobile_switch_theme_mobile'] === 'none') {
+    return;
+  }
+
+  $get['deskbrowser'] = (bool) variable_get('mobile_switch_deskbrowser', FALSE);
+  $get['developer'] = (bool) variable_get('mobile_switch_developer', FALSE);
+
+  // Get informations from Mobile Detect.
+  $get['browser'] = mobile_switch_mobile_detect($get['developer']);
+
+  // Actualisize the tablet device variable.
+  $conf['mobile_switch_istablet'] = $get['browser']['istablet'];
+
+  // Tablet device usage is configured to none.
+  if ($get['tablet_usage'] === FALSE) {
+    if ((bool) $get['browser']['istablet'] === TRUE) {
+      return;
+    }
+  }
+
+  // An prevented device is detected.
+  if ((bool) variable_get('mobile_switch_prevent_devices', FALSE) === TRUE) {
+    if ((bool) $get['browser']['prevent_device'] === TRUE) {
+      return;
+    }
+  }
+
+  if ((bool) $get['browser']['ismobiledevice'] === TRUE
+    || ((bool) $get['browser']['ismobiledevice'] === FALSE && $get['developer'] === TRUE && $get['deskbrowser'] === TRUE)
+    || $get['deskbrowser'] === TRUE) {
+    $conf['theme_mobile'] = $conf['theme_default'] = $conf['mobile_switch_theme_mobile'];
+
+    $conf['mobile_switch_ismobiletheme'] = TRUE;
+
+    // Use mobile theme on admin pages.
+    if ((stristr($_GET['q'], 'admin')) && $get['admin_usage'] === TRUE) {
+      $conf['admin_theme'] = $conf['mobile_switch_theme_mobile'];
+    }
+  }
+
+  if ((bool) $get['browser']['ismobiledevice'] === TRUE) {
+    $conf['mobile_switch_ismobiledevice'] = TRUE;
+  }
+
+  drupal_alter('mobile_switch_boot', $conf, $get);
+
+}
+
+/**
+ * Implements hook_menu().
+ */
+function mobile_switch_menu() {
+  $items = array();
+
+  $items['admin/config/user-interface/mobile-switch'] = array(
+    'title' => 'Mobile Switch',
+    'page callback' => 'drupal_get_form',
+    'page arguments' =>  array('mobile_switch_settings_form'),
+    'access callback' => 'mobile_switch_administer',
+    'description' => 'Enable or disable automatic theme changing for mobile devices.',
+    'file' => 'includes/mobile_switch.admin.inc',
+  );
+  $items['admin/config/user-interface/mobile-switch/basic-settings'] = array(
+    'title' => 'Basic settings',
+    'description' => 'Adjust the basic settings.',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10
+  );
+
+  $items['admin/config/user-interface/mobile-switch/advanced'] = array(
+    'title' => 'Advanced',
+    'page callback' => 'drupal_get_form',
+    'page arguments' =>  array('mobile_switch_advanced_settings_form'),
+    'access callback' => 'mobile_switch_administer',
+    'file' => 'includes/mobile_switch.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -8
+  );
+  $items['admin/config/user-interface/mobile-switch/development'] = array(
+    'title' => 'Development',
+    'page callback' => 'drupal_get_form',
+    'page arguments' =>  array('mobile_switch_development_settings_form'),
+    'access callback' => 'mobile_switch_administer',
+    'file' => 'includes/mobile_switch.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -6
+  );
+
+  return $items;
+}
+
+/**
+ * Access callback.
+ *
+ * @see mobile_switch_menu()
+ * @see mobile_switch_page_alter()
+ */
+function mobile_switch_administer() {
+  global $user;
+
+  if (user_access('administer site configuration', $user) || user_access('administer themes', $user)) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_system_themes_page_alter().
+ *
+ * Alter the displayed theme informations of the used mobile theme.
+ */
+function mobile_switch_system_themes_page_alter(&$theme_groups) {
+  $mobile_theme = variable_get('mobile_switch_mobile_theme', 'none');
+
+  if ($mobile_theme === 'none') {
+    return;
+  }
+
+  foreach ($theme_groups['enabled'] as $key => $theme) {
+    if ($theme->name == $mobile_theme) {
+      $theme_groups['enabled'][$key]->notes[] = t('default mobile theme by !mobile-switch', array('!mobile-switch' => l(t('Mobile Switch'), 'admin/config/user-interface/mobile-switch', array('attributes' => array('title' => t('Administer Mobile Switch'))))));
+      $theme_groups['enabled'][$key]->classes[] = 'theme-default';
+      $theme_groups['enabled'][$key]->classes[] = 'theme-default-mobile';
+      // Remove mobile theme links 'Disable' and 'Set default'.
+      foreach ($theme->operations as $op_key => $op) {
+        if ($op['href'] == 'admin/appearance/disable') {
+          unset($theme_groups['enabled'][$key]->operations[$op_key]);
+        }
+        if ($op['href'] == 'admin/appearance/default') {
+          unset($theme_groups['enabled'][$key]->operations[$op_key]);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_page_alter().
+ *
+ * Display a user agent message.
+ */
+function mobile_switch_page_alter(&$page) {
+  $get['display_useragent'] = variable_get('mobile_switch_display_useragent', 0);
+  $get['display_mobiledetectinfo'] = variable_get('mobile_switch_display_mobiledetectinfo', 0);
+
+  if ($get['display_useragent']) {
+    if (mobile_switch_administer()) {
+      $browser = mobile_switch_mobile_detect();
+      $message = t('!mobile-switch information. User agent', array('!mobile-switch' => l(t('Mobile Switch'), 'admin/config/user-interface/mobile-switch'))) . ':<br />';
+      $message .= $browser['useragent'];
+      drupal_set_message(filter_xss_admin($message));
+    }
+  }
+  if ($get['display_mobiledetectinfo']) {
+    if (mobile_switch_administer()) {
+      $browser = mobile_switch_mobile_detect();
+      $message = t('!mobile-switch information; Mobile Detect details', array('!mobile-switch' => l(t('Mobile Switch'), 'admin/config/user-interface/mobile-switch'))) . ':<br />';
+      $message .= _mobile_switch_get_mobile_detect_details($browser);
+      drupal_set_message($message);
+    }
+  }
+}
+
+/**
+ * Preprocess variables for html.tpl.php.
+ */
+function mobile_switch_preprocess_html(&$variables) {
+  if (variable_get('mobile_switch_mobile_theme', 'none') === 'none') {
+    return;
+  }
+
+  if (stristr($_GET['q'], 'admin')) {
+    drupal_add_css(drupal_get_path('module', 'mobile_switch') . '/css/mobile_switch.system.admin.css');
+  }
+}
+
+/**
+ * Fallback function to work with previous versions.
+ *
+ * This allows to work the Mobile Switch Block module branch 1
+ * with the Mobile Switch module branch 2.
+ */
+function mobile_switch_browscap_get_browser($emulator_check = FALSE) {
+  return mobile_switch_mobile_detect($emulator_check);
+}
+
+/**
+ * Get the Mobile Detect device detection results.
+ *
+ * - Is the device an mobile device.
+ * - Is the device an tablet
+ * - Use additional devices:
+ *   Extend the Mobile Detect device detection with an additional
+ *   device check.
+ * - Check if detected mobile device prevented.
+ *   The returned associative array are extended with the
+ *   'prevent_device' boolean value.
+ *
+ * @param $emulator_check
+ *   Optional boolean value to use mobile browser emulators.
+ *
+ * @see mobile_switch_boot()
+ */
+function mobile_switch_mobile_detect($emulator_check = FALSE) {
+  static $browser;
+
+  if (!isset($browser)) {
+    $library_uri = variable_get('mobile_detect_import_library_uri', FALSE);
+    if (file_exists($library_uri)) {
+      require_once $library_uri;
+
+      $detect = new Mobile_Detect();
+
+      $browser['ismobiledevice'] = $detect->isMobile() ? $detect->isMobile() : FALSE;
+      $browser['istablet'] = $detect->isTablet() ? $detect->isTablet() : FALSE;
+      $browser['useragent'] = $_SERVER['HTTP_USER_AGENT'];
+
+      // Mobile device emulators.
+      if ((bool) $emulator_check === TRUE) {
+        $emulator_strings = variable_get('mobile_switch_emulator_strings', "Fennec\nAndroid\nTablet\nMobi");
+        $emulator_strings = str_replace(array("\r\n", "\n", "\r"), '|', $emulator_strings);
+
+        $browser['ismobiledevice'] = '0';
+        if (preg_match("/$emulator_strings/i", $browser['useragent'])) {
+          $browser['ismobiledevice'] = '1';
+        }
+      }
+
+      // Mobile device prevention.
+      $browser['prevent_device'] = FALSE;
+      $prevent_devices = (bool) variable_get('mobile_switch_prevent_devices', FALSE);
+      $prevent_devices_strings = variable_get('mobile_switch_prevent_devices_strings', '');
+
+      if ($prevent_devices === TRUE && !empty($prevent_devices_strings)) {
+        $prevent_devices_strings = str_replace(array("\r\n", "\n", "\r"), '|', $prevent_devices_strings);
+        $strings_arr = explode("|", $prevent_devices_strings);
+
+        foreach ($strings_arr as $val) {
+          $found = stristr($browser['useragent'], $val);
+          if (!empty($found)) {
+            $browser['prevent_device'] = TRUE;
+          }
+        }
+      }
+    }
+    else {
+      $browser['ismobiledevice'] = FALSE;
+      $browser['istablet'] = FALSE;
+      $browser['useragent'] = $_SERVER['HTTP_USER_AGENT'];
+      watchdog('Mobile Switch', 'The Mobile Detect class file was not found.');
+    }
+  }
+
+  return $browser;
+}
+
+/**
+ * Detect the version number of a given Mobile Detect class file.
+ *
+ * The class is given by path to file.
+ *
+ * @param $path
+ *   The path to the Mobile Detect class file.
+ *   Example path:
+ *   sites/all/libraries/Mobile_Detect/Mobile_Detect.php
+ *
+ * @return string|boolean
+ *   The detected version number or FALSE.
+ *
+ * @see mobile_switch_settings_form()
+ */
+function mobile_switch_mobile_detect_get_version($path, $pattern = '@version\s+([0-9a-zA-Z\.-]+)@') {
+  $version = FALSE;
+
+  if (!file_exists($path)) {
+    return $version;
+  }
+
+  $file = fopen($path, 'r');
+  if ($file) {
+    while ($line = fgets($file)) {
+      if (preg_match($pattern, $line, $matches)) {
+        $version = $matches[1];
+        break;
+      }
+    }
+    fclose($file);
+  }
+
+  return $version;
+}
+
+/**
+ * Helper function to determine the active themes.
+ *
+ * @see mobile_switch_settings_form()
+ * @see mobile_switch.admin,inc
+ */
+function mobile_switch_get_themes() {
+  $themes = array();
+
+  foreach (list_themes() as $name => $value) {
+    if ($value->status == 0) continue;
+    $themes[$name] = preg_replace('/_/', ' ', ucfirst($value->name));
+  }
+
+  return $themes;
+}
+
+/**
+ * Helper function to get details detected by Mobile Detect.
+ *
+ * @param $browser
+ *  Associative array from Mobile Detect.
+ *
+ * @return string
+ *   HTML table contains Mobile Detect details.
+ *
+ * @see mobile_switch_page_alter()
+ */
+function _mobile_switch_get_mobile_detect_details($browser) {
+  $rows = array();
+
+  foreach ($browser as $key => $value) {
+    $rows[] = array($key, filter_xss_admin($value));
+  }
+
+  return theme('table', array('header' => array('', ''), 'rows' => $rows, 'attributes' => array('id' => 'mobile-switch-mobile-detect-details')));
+}

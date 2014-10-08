@@ -1,0 +1,5 @@
+name = Módulo gestión de embajadas
+description = Gestión puntos de contacto
+package = Ciudadanía Europea
+core = 7.x
+files[] = embajadas.module

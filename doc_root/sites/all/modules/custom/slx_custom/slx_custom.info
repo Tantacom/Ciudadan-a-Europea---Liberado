@@ -1,0 +1,10 @@
+; $Id: slx_custom.info,v 1.1.2.2.4.1 2011/10/05 15:40:00 solucionex Exp $
+name = SLX Customizing
+description = SLX Customizing for pages, block and views in the code.
+package = SLX
+core = 7.x
+
+version = "7.x-1"
+core = "7.x"
+project = "slx_custom"
+files[] = slx_custom.module

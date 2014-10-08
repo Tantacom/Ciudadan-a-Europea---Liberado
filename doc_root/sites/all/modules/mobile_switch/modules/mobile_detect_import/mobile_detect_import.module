@@ -1,0 +1,119 @@
+<?php
+/**
+ * @file
+ * Update and import functions for the Mobile Detect PHP class.
+ *
+ * The import funtions needs the enabled automatic version check or the
+ * manually Refresh Mobile detect action in the module administration.
+ */
+
+// Include Mobile Detect class import functions.
+include_once('mobile_detect_import.import.inc');
+
+/**
+ * Implements hook_menu().
+ */
+function mobile_detect_import_menu() {
+  $items['admin/config/user-interface/mobile-switch/mobile-detect-import'] = array(
+    'title' => 'Mobile Detect',
+    'description' => 'Configure Mobile Detect Import settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mobile_detect_import_settings_form'),
+    'access callback' => 'mobile_switch_administer',
+    'file' => 'mobile_detect_import.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -4
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function mobile_detect_import_libraries_info() {
+  $libraries = array();
+
+  $libraries['Mobile_Detect'] = array(
+    'name' => 'Mobile Detect',
+    'vendor url' => 'http://mobiledetect.net',
+    'download url' => 'https://raw.github.com/serbanghita/Mobile-Detect/master/Mobile_Detect.php',
+    //'download url' => 'https://raw.github.com/serbanghita/Mobile-Detect/tags',
+    'version arguments' => array(
+      'file' => 'Mobile_Detect.php',
+      'pattern' => '@version\s+([0-9a-zA-Z\.-]+)@',
+      'lines' => 200,
+      'cols' => 30
+    ),
+    'files' => array(
+      'php' => array('Mobile_Detect.php')
+    ),
+    'versions' => array(
+      '2' => array(
+        'files' => array(
+          'php' => array('Mobile_Detect.php')
+        )
+      )
+    )
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_cron().
+ */
+function mobile_detect_import_cron() {
+  if (variable_get('mobile_detect_import_enable_automatic_updates', TRUE) == TRUE) {
+    // Check the current update timer.
+    $automatic_update_timer = variable_get('mobile_detect_import_automatic_updates_timer', 604800);
+
+    // Check when the last update occurred.
+    $last_imported = variable_get('mobile_detect_import_imported', REQUEST_TIME);
+
+    // Update the Mobile Detect class file if the amount of time
+    // specified by the update timer has passed.
+    if (($last_imported + $automatic_update_timer) < REQUEST_TIME) {
+      // Update the Mobile Detect class file.
+      _mobile_detect_import_import();
+
+      // Record when the Mobile Detect class file was updated.
+      variable_set('mobile_detect_import_imported', REQUEST_TIME);
+    }
+  }
+}
+
+/**
+ * Implements hook_help().
+ */
+function mobile_detect_import_help($path, $arg) {
+  switch ($path) {
+    case 'admin/config/user-interface/mobile-switch/mobile-detect-import':
+      return '<p>' . t('Mobile Detect - The lightweight PHP class for detecting mobile devices.') . '</p>';
+    case 'admin/help#mobile_detect_import':
+      $output = '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('<a href="@mobile_detect_home">Mobile Detect</a> - The lightweight PHP class for detecting mobile devices.', array('@mobile_detect_home' => 'http://mobiledetect.net')) . '</p>';
+      $output .= '<p>' . t('The Mobile Detect Import module allows administrators to use an automated update feature.') . '</p>';
+      $output .= '<h3>' . t('Uses') . '</h3>';
+      $output .= '<dl>';
+      $output .= '<dt>' . t('Mobile Detect class') . '</dt>';
+      $output .= '<dd>' . t('The module does not include the actual Mobile Detect class.') . '</dd>';
+      $output .= '<dd>' . t('See the README.txt of the <em>Mobile Switch</em> module for detailed installation and usage instructions.') . '</dd>';
+      $output .= '<dt>' . t('Checking for available updates') . '</dt>';
+      $output .= '<dd>' . t('Enable automatic version check or check manually with the <em>Refresh Mobile Detect</em> action.') . '</dd>';
+      $output .= '<dt>' . t('New version available') . '</dt>';
+      $output .= '<dd>' . t('New versions of Mobile Detect are reported to the <em>Status Report</em> or the administration of the module.') . '</br />';
+      $output .= t('There are two ways to make a new version available.') . '</dd>';
+      $output .= '<dd>' . t('A) Copy the new version file sites/default/files/Mobile_Detect/Mobile_Detect.php to sites/all/libraries/Mobile_Detect/.') . '<br />';
+      $output .= t('B) Download the new version and store the version file in sites/all/libraries/Mobile_Detect/.') . '</dd>';
+      $output .= '<dt>' . t('Multi site installation') . '</dt>';
+      $output .= '<dd>' . t('Do not use the automatic or manual version check in sub-site installations!') . '<br />';
+      $output .= t('Administer Mobile Detect Import and the version files only in the main-site installation!') . '</dd>';
+      $output .= '</dl>';
+      if (mobile_switch_administer()) {
+        $output .= '<h3>' . t('Administration') . '</h3>';
+        $output .= t('<a href="@administer">Administer Mobile Detect Import</a>', array('@administer' => 'admin/config/user-interface/mobile-switch/mobile-detect-import'));
+      }
+      return $output;
+  }
+}

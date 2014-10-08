@@ -1,0 +1,544 @@
+<?php 
+
+
+function mapa_init() {
+    drupal_add_css(drupal_get_path('module', 'mapa') . '/css/mapa.css');
+}
+
+function mapa_theme($existing, $type, $theme, $path) {
+    return array(
+        'bigmap' => array(
+        'template' => '/templates/mapa',
+        'variables' => array('post' => NULL),
+        ),
+    );
+}
+
+function mapa_block_info() {
+  // This example comes from node.module.
+  $blocks['bigmap'] = array(
+    'info'        => 'Mapa',
+    'status'      => 1,
+    'weight'      => 0,
+    'visibility'  => 0,
+    'cache'       => -1,
+    'region'      => -1,
+  );
+  $blocks['buscador-mapa'] = array(
+    'info'        => 'Buscador mapa',
+    'status'      => 1,
+    'weight'      => 0,
+    'visibility'  => 0,
+    'cache'       => -1,
+    'region'      => -1,
+  );
+  
+  return $blocks;
+  
+}
+
+function mapa_block_view($delta = '') {
+  switch ($delta)
+    {
+      case 'bigmap':
+        $block['subject'] = 'Mapa';
+        $block['content'] = mapa_bigmap();
+      break;
+      case 'buscador-mapa':
+        $block['subject'] = 'Buscador mapa';
+        $block['content'] = drupal_get_form('mapa_buscador_form');
+      break;
+      
+    }
+   return $block;
+}
+
+function mapa_menu()
+{ 
+  $items = array();
+  
+  $items['admin/import-xml'] = array(
+    'title' => t('Import xml'),
+    'page callback' => 'mapa_importxml',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['mapa/get-markers'] = array(
+    'title' => t('Get countries'),
+    'page callback' => 'mapa_buscar_elementos_pais',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  $items['puntos-de-contacto'] = array(
+    'title' => 'Puntos de contacto',
+    'page callback' => 'mapa_pagina_puntos_de_contacto',
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['mapa/obtenerLatLong'] = array(
+    'title' => 'Obtener latitud y longitud',
+    'page callback' => 'mapa_pagina_get_latlong',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  
+   $items['mapa/proximos'] = array(
+    'title' => 'Obtener latitud y longitud',
+    'page callback' => 'mapa_proximos',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+  
+  return $items;
+
+}
+
+//Bloque mapa portada
+function mapa_bigmap() {
+    if( isset($_SESSION['coordenadaspost'] ) )
+        drupal_add_js(array('coordenadas' => $_SESSION['coordenadaspost']), 'setting');
+    else
+        drupal_add_js(array('coordenadas' => array(0,0)), 'setting');
+
+
+   
+
+    drupal_add_js('http://maps.google.com/maps/api/js?sensor=false', 'external');
+    drupal_add_js(drupal_get_path('module', 'mapa') . '/js/mapa.js');
+    drupal_add_js(drupal_get_path('module', 'mapa') . '/js/jquery.cookie.js');
+ 
+    $output = theme('bigmap');
+    return $output;
+}
+
+//Página puntos de contacto
+function mapa_pagina_puntos_de_contacto() {
+   
+    drupal_add_js('http://maps.google.com/maps/api/js?sensor=false', 'external');
+    drupal_add_js(drupal_get_path('module', 'mapa') . '/js/mapa.js');
+    drupal_add_js(drupal_get_path('module', 'mapa') . '/js/jquery.cookie.js');
+
+    $output = theme('bigmap', array('post' => $_POST));
+    return $output;
+}
+
+function mapa_importxml() {
+
+    $ruta_fichero = 'sites/default/files/embajadas.xml';
+    if (file_exists($ruta_fichero)) {
+
+        $output = '';
+        $cuantos_item = 0;
+    
+        $archivo = file_get_contents($ruta_fichero);
+        $xml = str_replace('pr:', '', $archivo);
+
+        $xml = new SimpleXMLElement($xml);
+        
+        foreach ($xml->representation as $item) {
+            $pais = country_load($item->Target_Country);
+            $cuantos_item++;
+        }
+
+        $output .= 'Cuantos: ' . $cuantos_item;
+
+    } else {
+        exit('No existe el fichero XML');
+    }
+    return $output;
+    
+}
+
+function embajadas_importcsv() {
+
+
+    if (($gestor = fopen("datos.csv", "r")) !== FALSE) {
+    while (($datos = fgetcsv($gestor, 1000, ",")) !== FALSE) {
+        $id =  $datos[0];
+        $phone =  $datos[1];
+        $fax =  $datos[2];
+        $email =  $datos[3];
+         db_update('embajadas') // Table name no longer needs {}
+->fields(array(
+'phone' => $phone,
+'fax' => $fax,
+'email' => $email
+))
+->condition('eid', $id )
+->execute();
+    }
+    fclose($gestor);
+}
+    
+}
+
+function mapa_proximos () {
+    
+    // $pais_elegido = 'BR';
+    // $pais_elegido_origen = 'PT';
+    $pais_elegido = $_POST['paisorigen'];
+    $pais_elegido_origen = $_POST['paisdestino'];
+    $latitude = $_POST['latitude'];
+    $longitude = $_POST['longitude'];
+    
+        
+ 
+   // primero los del país ordenados por distancia
+$noInCurrentCountry = false;
+$elements = array();
+    $query = db_query( "SELECT *,        
+       ((2 * 3960 *          ATAN2(           SQRT(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             COS(RADIANS(:latitude )) *
+       POWER(SIN((RADIANS(:longitude - lng))/2), 2)           ),           
+       SQRT(1-(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             
+       COS(RADIANS(:latitude)) *             POWER(SIN((RADIANS(:longitude- lng))/2), 2)
+       ))         )       )) AS distance  FROM embajadas where lat <> 0 ORDER BY distance limit 0,10", 
+       array( 'latitude' => $latitude, 'longitude' => $longitude )
+       );
+
+foreach( $query as $item ){
+    $elements[] = $item;
+}
+
+$output = array();
+$output['elements'] = array();
+            foreach( $elements as $result ){
+       
+              $type = '';
+              switch( $result->type ){
+                case 1:
+                    $type = 'Embajada';
+                    break;
+                case 2:
+                    $type = 'Consulado';
+                    break;
+                case 3:
+                    $type = 'Representación de país UE';
+                    break;
+                 case 4:
+                    $type = 'Representación recomendada MAEC';
+                    break;
+              }
+              $output['elements'][] = array(
+                        'pais' => country_property(country_load($result->origin_country), 'name', NULL, TRUE),
+                        'direccion' => $result->address,
+                        'telefono' => $result->phone,
+                        'fax' => $result->fax,
+                        'ciudad' => $result->city,
+                        'email' => $result->email,
+                        'type' => $type . ' ' . country_property(country_load($result->origin_country), 'name', NULL, TRUE),
+                        'lat' => $result->lat,
+                        'lng' => $result->lng
+                    );
+            }
+            
+     $output['msg'] = false;
+        
+
+    drupal_json_output($output);
+    
+}
+
+
+function mapa_buscar_elementos_pais () {
+    
+    // $pais_elegido = 'BR';
+    // $pais_elegido_origen = 'PT';
+    $pais_elegido = $_POST['paisorigen'];
+    $pais_elegido_origen = $_POST['paisdestino'];
+    $latitude = $_POST['latitude'];
+    $longitude = $_POST['longitude'];
+    
+    $where = ' WHERE ';
+
+  
+
+      $where.= " origin_country='ES'";
+   
+    
+    if( $pais_elegido_origen !== 0 ){
+      if( $pais_elegido !== 0 && $pais_elegido !== 'all' ){
+        $where .= " AND ";
+      }
+      $where .= " target_country='$pais_elegido_origen'";
+    }
+    
+ 
+   // primero los del país ordenados por distancia
+$noInCurrentCountry = false;
+$elements = array();
+    $query = db_query( "SELECT *,        
+       ((2 * 3960 *          ATAN2(           SQRT(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             COS(RADIANS(:latitude )) *
+       POWER(SIN((RADIANS(:longitude - lng))/2), 2)           ),           
+       SQRT(1-(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             
+       COS(RADIANS(:latitude)) *             POWER(SIN((RADIANS(:longitude- lng))/2), 2)
+       ))         )       )) AS distance  FROM embajadas $where AND lat <> 0 ORDER BY type", 
+       array( 'latitude' => $latitude, 'longitude' => $longitude )
+       );
+
+foreach( $query as $item ){
+    $elements[] = $item;
+}
+
+// los del pais no geolocalizados
+ $query = db_query( "SELECT *,        
+       ((2 * 3960 *          ATAN2(           SQRT(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             COS(RADIANS(:latitude )) *
+       POWER(SIN((RADIANS(:longitude - lng))/2), 2)           ),           
+       SQRT(1-(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             
+       COS(RADIANS(:latitude)) *             POWER(SIN((RADIANS(:longitude- lng))/2), 2)
+       ))         )       )) AS distance  FROM embajadas $where AND lat = 0 ORDER BY type", 
+       array( 'latitude' => $latitude, 'longitude' => $longitude )
+       );
+
+foreach( $query as $item ){
+    $elements[] = $item;
+}
+
+
+
+//if ( count( $elements ) == 0 ) {
+    $noInCurrentCountry = true;
+    $elements = array();
+    $where = ' WHERE ';
+
+
+
+    if( $pais_elegido_origen !== 0 ){
+      
+      $where .= " target_country='$pais_elegido_origen'";
+    }
+
+  $query = db_query( "SELECT *,        
+       ((2 * 3960 *          ATAN2(           SQRT(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             COS(RADIANS(:latitude )) *
+       POWER(SIN((RADIANS(:longitude - lng))/2), 2)           ),           
+       SQRT(1-(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             
+       COS(RADIANS(:latitude)) *             POWER(SIN((RADIANS(:longitude- lng))/2), 2)
+       ))         )       )) AS distance  FROM embajadas $where AND lat <> 0 ORDER BY type", 
+       array( 'latitude' => $latitude, 'longitude' => $longitude )
+       );
+
+foreach( $query as $item ){
+    $elements[] = $item;
+}
+
+// los del pais no geolocalizados
+ $query = db_query( "SELECT *,        
+       ((2 * 3960 *          ATAN2(           SQRT(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             COS(RADIANS(:latitude )) *
+       POWER(SIN((RADIANS(:longitude - lng))/2), 2)           ),           
+       SQRT(1-(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             
+       COS(RADIANS(:latitude)) *             POWER(SIN((RADIANS(:longitude- lng))/2), 2)
+       ))         )       )) AS distance  FROM embajadas $where AND lat = 0 ORDER BY type", 
+       array( 'latitude' => $latitude, 'longitude' => $longitude )
+       );
+
+foreach( $query as $item ){
+    $elements[] = $item;
+}
+    
+//}
+
+
+
+
+
+
+
+
+
+    
+    $output = array();
+$output['elements'] = array();
+            foreach( $elements as $result ){
+              $type = '';
+              switch( $result->type ){
+                case 1:
+                    $type = 'Embajada';
+                    break;
+                case 2:
+                    $type = 'Consulado';
+                    break;
+                case 3:
+                    $type = 'Representación de país UE';
+                    break;
+                 case 4:
+                    $type = 'Representación recomendada MAEC';
+                    break;
+              }
+              $output['elements'][] = array(
+                        'pais' => country_property(country_load($result->origin_country), 'name', NULL, TRUE),
+                        'direccion' => $result->address,
+                        'telefono' => $result->phone,
+                        'fax' => $result->fax,
+                        'email' => $result->email,
+                        'type' => $type . ' ' . country_property(country_load($result->origin_country), 'name', NULL, TRUE),
+                        'ciudad' => $result->city,
+                        'lat' => $result->lat,
+                        'lng' => $result->lng
+                    );
+            }
+            
+     $output['msg'] = false;
+        
+
+    drupal_json_output($output);
+   
+}
+
+function mapa_pagina_get_latlong() {
+    if(isset($_POST['direccion'])) {
+        $addr = urlencode($_POST['direccion']);
+        $url = 'http://maps.google.com/maps/geo?q='.$addr.'&output=csv&sensor=false';
+        $get = file_get_contents($url);
+        $records = explode(",",$get);
+        $lat = $records['2'];
+        $lng = $records['3'];
+         
+        $data[] = array('Lat'=>$lat, 'Lng'=>$lng);
+         
+        return drupal_json_output($data);
+    } else { return; }
+}
+
+function mapa_proximas() {
+   $latitude = 40;
+   $longitude = -3.70379;
+
+   $query = db_query( "SELECT address , city, lat,lng,        
+       ((2 * 3960 *          ATAN2(           SQRT(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             COS(RADIANS(:latitude )) *
+       POWER(SIN((RADIANS(:longitude - lng))/2), 2)           ),           
+       SQRT(1-(             POWER(SIN((RADIANS(:latitude - lat))/2), 2) +             
+       COS(RADIANS(lat)) *             
+       COS(RADIANS(:latitude)) *             POWER(SIN((RADIANS(:longitude- lng))/2), 2)
+       ))         )       )) AS distance  FROM embajadas ORDER BY distance LIMIT 20", 
+       array( 'latitude' => $latitude, 'longitude' => $longitude )
+       );
+   foreach ($query as $record) {
+
+   }
+}
+
+
+
+function mapa_buscador_form() {
+    
+    $valores = Array();
+    $paises_europa = Array();
+    // $valores[0] = 'Seleccione país';
+    
+    $todos_paises = countries_get_countries('all');
+    foreach ($todos_paises as $pais) {
+        $clave_pais = $pais->iso2;
+        $valores[$clave_pais] = country_property($pais, 'name', NULL, TRUE);
+    }
+
+    // Array de los países de la UE
+    $paises_europa[0] = 'Selecciona país';
+    /*$paises_europa['DE'] = 'Alemania';
+    $paises_europa['AT'] = 'Austria';
+    $paises_europa['BE'] = 'Bélgica';
+    $paises_europa['BG'] = 'Bulgaria';
+    $paises_europa['CY'] = 'Chipre';
+    $paises_europa['DK'] = 'Dinamarca';
+    $paises_europa['SI'] = 'Eslovenia';
+    $paises_europa['ES'] = 'España';
+    $paises_europa['EE'] = 'Estonia';
+    $paises_europa['FI'] = 'Finlandia';
+    $paises_europa['FR'] = 'Francia';
+    $paises_europa['GR'] = 'Grecia';
+    $paises_europa['NL'] = 'Holanda';
+    $paises_europa['HU'] = 'Hungría';
+    $paises_europa['IE'] = 'Irlanda';
+    $paises_europa['IT'] = 'Italia';
+    $paises_europa['LV'] = 'Letonia';
+    $paises_europa['LT'] = 'Lituania';
+    $paises_europa['LU'] = 'Luxenburgo';
+    $paises_europa['MT'] = 'Malta';
+    $paises_europa['PL'] = 'Polonia';
+    $paises_europa['PT'] = 'Portugal';
+    $paises_europa['GB'] = 'Reino Unido';
+    $paises_europa['CZ'] = 'República Checa';
+    $paises_europa['SK'] = 'República Eslovaca';
+    $paises_europa['RO'] = 'Rumanía';
+    $paises_europa['SE'] = 'Suecia';*/
+
+    // $paises_europa = countries_get_countries('all');
+    // $valores[$clave_pais] = country_property($pais, 'name', NULL, TRUE);
+
+
+    
+    $paises_no_europeos = array_diff($valores, $paises_europa);
+    asort($paises_no_europeos);
+    array_unshift($paises_no_europeos,'Selecciona país');
+        
+    $form['#attributes']['class'][] = 'filter cl';
+    
+    $form['#action'] = url('puntos-de-contacto');
+    $form['#redirect'] = FALSE;
+    
+    /*$form['pais_origen'] = array(
+        '#title' => t('Elije tu país o cualquier Estado de la UE'),
+        '#type' => 'select',
+        '#options' => $paises_europa,
+    );*/
+
+    $form['pais_destino'] = array(
+        '#title' => t('País donde estás o vas a viajar'),
+        '#type' => 'select',
+        '#options' => $paises_no_europeos,
+        '#default_value' => $_SESSION['coordenadaspost'][1]
+    );
+
+if( variable_get( 'mobile_switch_ismobiledevice' ) == 1 ){
+
+     $form['pais_destino']['#attributes'] = array(
+        'data-theme' => 'a'
+    );
+
+}
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Search'),
+    );
+    
+    return $form;
+}
+
+function mapa_buscador_form_submit(&$form, &$form_state) {
+    $origen = $form_state['values']['pais_origen'];
+    $destino = $form_state['values']['pais_destino'];
+    
+    $_SESSION['coordenadaspost'] = array($origen, $destino);
+}
+
+function mapa_load_data_from_xml(){
+   $query = db_select( 'embajadas', e )->fields( 'e', array( 'eid', 'address_google' ))->condition( 'lat', 0 )->execute()->fetchAll();
+
+
+    foreach ($query as $item) {
+
+            $addr = urlencode($item->address_google);
+            $url = 'http://maps.google.com/maps/geo?q='.$addr.'&output=csv&sensor=false';
+            $get = file_get_contents($url);
+            $records = explode(",",$get);
+print_r( $records );
+            db_update( 'embajadas' )
+                    ->fields(array(
+                        'lat' => is_numeric( $records[2] ) ? $records[2] : 0,
+                        'lng' => is_numeric( $records[3] ) ? $records[3] : 0,
+  ))
+              ->condition('eid', $item->eid, '=')->execute();
+           
+             
+  }
+}

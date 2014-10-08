@@ -1,0 +1,82 @@
+.ie7 #header{zoom:1}
+.ie7 #menu li{display:inline;}
+
+.ie7 #primary-menu-bar ul:first-child li.expanded ul { z-index:20000; background-color:#FFF; }
+
+.ie7 #header { z-index:2; }
+.ie7 .columns {z-index:1;}
+
+.ie7 .footerLogos li{margin-left:1.9em;}
+.ie7 .footerLogos li:first-child{margin-left:0;}
+
+.ie7 .footerLogos2 { float:left; width:69em; padding-left:24em; }
+	.ie7 .footerLogos2 li { float:left; }
+
+.ie7 .footerLinks { width:60%; }
+
+.ie7 .dest, .ie7 .content { float:left; margin-top:-.8em; }
+.ie7 .content { width:76.9em; }
+
+.ie7 .all fieldset { width:22em; }
+	.ie7 .all fieldset label { width:8em; }
+
+
+
+.ie7 .wysiwyg .detail dt { float:left; clear:left;}
+.ie7 .wysiwyg .detail dd { float:left; width:44em; }
+
+/*Home*/
+.cont-map { width:53.9em; }
+.modInfo { width:9.8em; }
+
+.type2 a .stroke { color:#712222; }
+.ie7 .modInfo a { cursor:pointer; }
+
+.legend { float:left; clear:both; width:100%; }
+	.ie7 .map { position:relative; float:left; width:100%; }
+
+.ie7 .legend { bottom:1.2em; width:22em; }
+.ie7 .legend ul { width:20em; }
+ 	.legend li { float:left; }
+	.ie7 .legend li { width:100%; }
+
+.ie7 .related .legend ul { width:25.2em; }
+
+.all span.btn { margin-top:1.5em; }
+.ie7 .all span.btn { margin-top:1.3em; }
+
+.ie7 .all .legend { margin-bottom:1.5em; }
+	.ie7 .all .legend ul { width:83.5em; }
+		.ie7 .all .legend li { width:auto; }
+
+/*BreadCrumb*/
+.ie7 .breadcrumb { width:100%; margin-bottom:1em; }
+	.ie7 .breadcrumb li { float:left; margin-right:1em; }
+
+.ie7 .countries td { border:solid 1px #E5E5E5; border-top:0 none; }
+
+
+.main .sep { float:left; width:auto; }
+	.ie7 .main .sep, .ie8 .main .sep { width:38.5em }
+.contact .sep { display:block; float:left; width:38em; margin-bottom:1em; }
+.ie8 .contact .sep { width:38em; }
+
+.sep hr { border:solid 1px #fff; height:1px; width:100%; }
+
+/*News*/
+.summary.news { float:left; clear:both; width:100%; }
+.ie8 .summary.news { float:none; }
+	.ie8 .summary.news, .ie9 .summary.news { background-color:#FFF; }
+.ie7 .pagination { min-height:1em; }
+
+/*Contact*/
+.contact h3.contact { display:inline-block; margin-top:.5em; }
+
+.ie7 .contact section { float:left; width:100%; }
+
+.ie7 .contact .wysiwyg dt { display:block; float:left; clear:left; width:auto; }
+	.ie7 .contact .wysiwyg dt dt { float:none; clear:none; }
+
+.ie7 h3.contact, .ie8 h3.contact { float:left; }
+
+.ie7 .como-llegar { float:left; clear:both; width:30em !important; }

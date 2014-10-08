@@ -1,0 +1,142 @@
+<?php
+/**
+ * Implements hook_schema().
+ */
+function mapa_schema() {
+  $schema['embajadas'] = array(
+    'description' => 'Tabla que guarda las coordenadas de las embajadas',
+    'fields' => array(
+      'eid' => array(
+        'description' => 'Identificador de la embajada, autoincremental',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'address' => array(
+        'description' => 'El nombre',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'lat' => array(
+        'description' => 'Latitud',
+        'type' => 'float',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+      ),
+      'lng' => array(
+        'description' => 'Longitud',
+        'type' => 'float',
+        'unsigned' => TRUE,
+        'not null' => TRUE
+     )
+      
+    ), // fields
+    'primary key' => array('eid'),
+  ); // sponsors.
+  return $schema;
+}
+
+function mapa_update_7001(){
+  drupal_get_schema_unprocessed( 'mapa' );
+}
+
+function mapa_update_7002(){
+  drupal_get_schema_unprocessed( 'mapa','embajadas' );
+}
+
+function mapa_update_7003(){
+  if (!db_table_exists('embajadas')) {
+    db_create_table('embajadas',
+      drupal_get_schema_unprocessed('mapa', 'embajadas'));
+  }
+}
+
+function mapa_update_7004(){
+  db_change_field('embajadas', 'lat', 'lat',
+    array('type' => 'float', 'not null' => TRUE));
+  db_change_field('embajadas', 'lng', 'lng',
+    array('type' => 'float', 'not null' => TRUE));
+}
+
+function mapa_update_7005(){
+  db_change_field('embajadas', 'lat', 'lat',
+    array('type' => 'float', 'not null' => TRUE, 'description' => 'Latitud calculada'));
+  db_change_field('embajadas', 'lng', 'lng',
+    array('type' => 'float', 'not null' => TRUE, 'description' => 'Longitud calculada' ));
+}
+
+function mapa_update_7006(){
+  $pais = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'default' => '',
+    'description' => 'País de la embajada',
+  );
+  db_add_field('embajadas', 'pais', $pais);
+}
+
+function mapa_update_7007(){
+  $telefono = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'default' => '',
+    'description' => 'Telefono de la embajada',
+  );
+  db_add_field('embajadas', 'phone', $telefono);
+
+  $fax = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'default' => '',
+    'description' => 'Fax de la embajada',
+  );
+  db_add_field('embajadas', 'fax', $fax);
+
+  $ciudad = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'default' => '',
+    'description' => 'Ciudad donde se encuentra la embajada',
+  );
+  db_add_field('embajadas', 'city', $ciudad); 
+}
+
+function mapa_update_7008(){
+  $pais = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'default' => '',
+    'description' => 'País de la embajada',
+  );
+ db_change_field( 'embajadas', 'pais', 'country', $pais );
+}
+
+function mapa_update_7009(){
+  $address = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'default' => '',
+    'description' => 'Dirección de la embajada',
+  );
+ db_change_field( 'embajadas', 'address', 'address', $address );
+}
+
+function mapa_update_7010(){
+  $address = array(
+    'type' => 'text',
+    'description' => 'Dirección de la embajada',
+  );
+ db_change_field( 'embajadas', 'address', 'address', $address );
+}
+
+function mapa_update_7011(){
+  $pais = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'default' => '',
+    'description' => 'País de la embajada',
+  );
+  db_change_field('embajadas', 'country', 'target_country', $pais);
+  db_add_field('embajadas', 'origin_country', $pais);
+}
