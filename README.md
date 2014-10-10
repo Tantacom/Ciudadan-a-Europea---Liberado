@@ -2,7 +2,7 @@
 
 This is the code for the web "Ciudadanía Europea".
 
-### What is this, and how do hasck into this? ###
+### What is this, and how do hack into this? ###
 
 * This is a development based on Drupal, all steps and information on how to setup Drupal should apply.
 * Please, note that the supplied database dump is empty, this is for confidentiality reasons: there is only the table definitions, but no content of any kind; it is here only for illustrative purposes, it will NOT work as-is.
