@@ -9,7 +9,7 @@ This is the code for the web "Ciudadanía Europea".
 
 All code developed by Tanta Tecnología y comunicación S.L. and not publicly available beforehand is made freely available for anyone under any of the following licenses:
 
-* Three-clause BSB License
+* Three-clause BSD License
 * MIT License
 * Public Domain (where applicable).
 
